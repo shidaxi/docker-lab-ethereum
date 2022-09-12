@@ -17,6 +17,10 @@ const config = {
         {
           privateKey: "052054ca3aa7fb2cb9c8c84a3e537c7fed4cc1173a5ac76817599256f6d7d54a",
           balance: "10000000000000000000000"
+        },
+        {
+          privateKey: "7b9aa74ccc4a88528db17fb0c985507f1b2be1a46673f06ddb1b0bb569c28ae5",
+          balance: "10000000000000000000000"
         }
       ]
     },
