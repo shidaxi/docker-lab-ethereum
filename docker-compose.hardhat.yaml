@@ -1,0 +1,11 @@
+version: "3.7"
+services:
+  hardhat-node:
+    hostname: hardhat-node
+    container_name: hardhat-node
+    image: ethereumoptimism/hardhat-node:${DOCKER_TAG_HARDHAT:-nightly}
+    ports:
+      - "8045:8545"
+    volumes:
+      - ./hardhat/hardhat.config.js:/hardhat/hardhat.config.js:ro
+      - ./hardhat:/root/.ethereum

@@ -1,0 +1,41 @@
+version: "3.7"
+services:
+  geth-standalone-init:
+    container_name: geth-standalone-init
+    image: ethereum/client-go:${DOCKER_TAG_GETH:-v1.10.23}
+    entrypoint: 
+    - sh
+    - -c
+    - test -f /root/.ethereum/LOCK || geth --dev init /root/genesis.json
+    volumes:
+      - ./geth/standalone:/root/.ethereum:rw
+      - ./geth/genesis.json:/root/genesis.json:ro
+  geth-standalone:
+    hostname: geth-standalone
+    container_name: geth-standalone
+    image: ethereum/client-go:${DOCKER_TAG_GETH:-v1.10.23}
+    ports:
+      - 8045:8045
+      - 8046:8046
+    volumes:
+      - ./geth/standalone:/root/.ethereum
+    depends_on:
+      geth-standalone-init:
+        condition: service_completed_successfully
+    command: 
+      --keystore /root/.ethereum/keystore
+      --datadir /root/.ethereum
+      --http
+      --http.port 8045
+      --http.addr 0.0.0.0
+      --http.vhosts * 
+      --http.api personal,eth,net,web3
+      --http.corsdomain *
+      --ws
+      --ws.port 8046
+      --ws.addr 0.0.0.0
+      --ws.api personal,eth,net,web3,debug,txpool
+      --dev
+      --dev.period 10
+      --password /root/.ethereum/password.txt
+      --gcmode archive

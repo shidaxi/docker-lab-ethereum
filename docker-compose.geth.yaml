@@ -1,0 +1,86 @@
+version: "3.7"
+services:
+  init-bootnode:
+    container_name: geth-bootnode-init
+    image: ethereum/client-go:${DOCKER_TAG_GETH:-v1.10.23}
+    entrypoint: 
+    - sh
+    - -c
+    - test -f /root/.ethereum/LOCK || geth init /root/genesis.json
+    volumes:
+      - ./geth/bootnode:/root/.ethereum:rw
+      - ./geth/genesis.json:/root/genesis.json:ro
+  init-signnode1:
+    container_name: geth-signnode1-init
+    image: ethereum/client-go:${DOCKER_TAG_GETH:-v1.10.23}
+    entrypoint: 
+    - sh
+    - -c
+    - test -f /root/.ethereum/LOCK || geth init /root/genesis.json
+    volumes:
+      - ./geth/signnode1:/root/.ethereum:rw
+      - ./geth/genesis.json:/root/genesis.json:ro
+  bootnode:
+    hostname: geth-bootnode
+    image: ethereum/client-go:${DOCKER_TAG_GETH:-v1.10.23}
+    container_name: geth-bootnode
+    working_dir: /root/.ethereum
+    depends_on:
+      init-bootnode:
+        condition: service_completed_successfully
+    command:
+      --nodekeyhex="ebeded96116476abd53786e9f90ddfcd43e8e6a46a1db135abb1df2afc39cbdd"
+      --nodiscover
+      --http
+      --http.addr="0.0.0.0"
+      --http.port=8045
+      --http.corsdomain="*"
+      --http.vhosts="*"
+      --http.api="admin, miner, txpool, web3, personal, eth, net"
+      --syncmode="full"
+      --port=30301
+      --networkid=701
+      --allow-insecure-unlock
+      --unlock='192ed893a4963c09ceb430cdba8461aa71a2748e'
+      --password='./keystore/password.txt'
+      --mine
+    volumes:
+      - ./geth/bootnode:/root/.ethereum:rw
+      - ./geth/genesis.json:/root/genesis.json:ro
+    ports:
+      - "30301:30301"
+      - "30301:30301/udp"
+      - "8045:8045"
+
+  signnode1:
+    image: ethereum/client-go:${DOCKER_TAG_GETH:-v1.10.23}
+    hostname: geth-signnode1
+    container_name: geth-signnode1
+    working_dir: /root/.ethereum
+    depends_on: 
+      init-signnode1:
+        condition: service_completed_successfully
+      bootnode:
+        condition: service_started
+    command: 
+      --http
+      --http.addr="0.0.0.0"
+      --http.port=8145
+      --http.corsdomain="*"
+      --http.vhosts="*"
+      --http.api="admin, miner, txpool, web3, personal, eth, net"
+      --syncmode="full"
+      --port=30302
+      --networkid=701
+      --allow-insecure-unlock
+      --bootnodes="enode://15eeaf795d067fa14cc14a343f12d5e5de1fc867e62dd30eabf2d671f7223a3e6a16dc30744a103934b5863448486a1e90a3f17e76ba3717ba989a59e86530b9@geth-bootnode:30301"
+      --unlock='ce63de6e58f2529548a5d580657f0c34c33125be'
+      --password='./keystore/password.txt'
+      --mine
+    volumes:
+      - ./geth/signnode1:/root/.ethereum:rw
+      - ./geth/genesis.json:/root/genesis.json:ro
+    ports:
+      - "30302:30302"
+      - "30302:30302/udp"
+      - "8145:8145"

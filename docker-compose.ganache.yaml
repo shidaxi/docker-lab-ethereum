@@ -1,0 +1,17 @@
+version: "3.7"
+services:
+  ganache:
+    hostname: ganache
+    container_name: ganache
+    image: trufflesuite/ganache:${DOCKER_TAG_GANACHE:-latest}
+    command:
+      - --server.port
+      - "8045"
+      - --chain.chainId
+      - "1337"
+      - --wallet.accounts
+      - 0x052054ca3aa7fb2cb9c8c84a3e537c7fed4cc1173a5ac76817599256f6d7d54a,10000000000000000000000
+    ports:
+      - "8045:8045"
+    volumes:
+      - ./ganache:/root/.ethereum
